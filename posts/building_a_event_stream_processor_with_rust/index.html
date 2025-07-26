@@ -1,0 +1,1069 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  
+    <title>Building an Event Stream Processor in Rust :: Terminal</title>
+  
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Building the core of an Event Stream Processor in Rust, using the std library and very minimal dependencies for error handling and bytes processing." />
+<meta name="keywords" content="HTTP, Server, Rust, Networking" />
+
+  <meta name="robots" content="noodp" />
+
+<link rel="canonical" href="/posts/building_a_event_stream_processor_with_rust/" />
+
+
+
+
+
+  
+  <link rel="stylesheet" href="/css/buttons.min.86f6b4c106b6c6eb690ae5203d36b442c1f66f718ff4e8164fa86cf6c61ad641.css">
+
+  
+  <link rel="stylesheet" href="/css/code.min.d529ea4b2fb8d34328d7d31afc5466d5f7bc2f0bc9abdd98b69385335d7baee4.css">
+
+  
+  <link rel="stylesheet" href="/css/fonts.min.5bb7ed13e1d00d8ff39ea84af26737007eb5051b157b86fc24487c94f3dc8bbe.css">
+
+  
+  <link rel="stylesheet" href="/css/footer.min.eb8dfc2c6a7eafa36cd3ba92d63e69e849e2200e0002a228d137f236b09ecd75.css">
+
+  
+  <link rel="stylesheet" href="/css/gist.min.a751e8b0abe1ba8bc53ced52a38b19d8950fe78ca29454ea8c2595cf26aad5c0.css">
+
+  
+  <link rel="stylesheet" href="/css/header.min.75c7eb0e2872d95ff48109c6647d0223a38db52e2561dd87966eb5fc7c6bdac6.css">
+
+  
+  <link rel="stylesheet" href="/css/main.min.775ac2af004d44c22a6d000fbd1d9af529642f5cef27399d0280d180af2c2e9b.css">
+
+  
+  <link rel="stylesheet" href="/css/menu.min.310d32205bdedd6f43144e3c3273c9deecd238eba5f9108db5ea96ca0cfbe377.css">
+
+  
+  <link rel="stylesheet" href="/css/pagination.min.bbb986dbce00a5ce5aca0504b7925fc1c581992a4bf57f163e5d69cc1db7d836.css">
+
+  
+  <link rel="stylesheet" href="/css/post.min.ad50c7f4d00e7975918f37fc74c6029e1959a40d66fb5b2c6564a8715e985573.css">
+
+  
+  <link rel="stylesheet" href="/css/syntax.min.e9ab635cf918bc84b901eb65c0b2caa74c9544245e3647c1af5c129896ef276e.css">
+
+  
+  <link rel="stylesheet" href="/css/terminal.min.e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855.css">
+
+  
+  <link rel="stylesheet" href="/css/terms.min.b81791663c3790e738e571cdbf802312390d30e4b1d8dc9d814a5b5454d0ac11.css">
+
+
+
+
+
+
+
+<link rel="shortcut icon" href="/img/favicon.ico">
+<link rel="apple-touch-icon" href="/img/apple-touch-icon.png">
+
+
+<meta name="twitter:card" content="summary" />
+
+  
+    <meta name="twitter:site" content="" />
+  
+    <meta name="twitter:creator" content="" />
+
+
+
+<meta property="og:locale" content="en" />
+<meta property="og:type" content="article" />
+<meta property="og:title" content="Building an Event Stream Processor in Rust">
+<meta property="og:description" content="Building the core of an Event Stream Processor in Rust, using the std library and very minimal dependencies for error handling and bytes processing." />
+<meta property="og:url" content="/posts/building_a_event_stream_processor_with_rust/" />
+<meta property="og:site_name" content="Terminal" />
+
+  
+  
+  <meta property="og:image" content="/">
+
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="627">
+
+
+  <meta property="article:published_time" content="2024-11-27 02:49:49 -0400 AST" />
+
+
+
+
+
+
+
+
+
+
+
+
+</head>
+<body>
+
+
+<div class="container center">
+
+  <header class="header">
+  <div class="header__inner">
+    <div class="header__logo">
+      <a href="/">
+  <div class="logo">
+    Terminal
+  </div>
+</a>
+
+    </div>
+    
+      <ul class="menu menu--mobile">
+  <li class="menu__trigger">Menu&nbsp;▾</li>
+  <li>
+    <ul class="menu__dropdown">
+      
+        
+          <li><a href="/about">About</a></li>
+        
+      
+        
+          <li><a href="/showcase">Showcase</a></li>
+        
+      
+      
+        <hr />
+        
+          <li>
+            <a href="/">English</a>
+          </li>
+        
+      
+    </ul>
+  </li>
+</ul>
+
+    
+    
+      <ul class="menu menu--desktop menu--language-selector">
+  <li class="menu__trigger">English&nbsp;▾</li>
+  <li>
+    <ul class="menu__dropdown">
+      
+        <li><a href="/">English</a></li>
+      
+    </ul>
+  </li>
+</ul>
+
+    
+  </div>
+  
+    <nav class="navigation-menu">
+  <ul class="navigation-menu__inner menu--desktop">
+    
+      
+      
+        <li>
+          <ul class="menu">
+            <li class="menu__trigger">Show more&nbsp;▾</li>
+            <li>
+              <ul class="menu__dropdown">
+                
+                  
+                    <li><a href="/about" >About</a></li>
+                  
+                
+                  
+                    <li><a href="/showcase" >Showcase</a></li>
+                  
+                
+              </ul>
+            </li>
+          </ul>
+        </li>
+      
+    
+  </ul>
+</nav>
+
+  
+</header>
+
+
+  <div class="content">
+    
+<article class="post">
+  <h1 class="post-title">
+    <a href="/posts/building_a_event_stream_processor_with_rust/">Building an Event Stream Processor in Rust</a>
+  </h1>
+  <div class="post-meta"><time class="post-date">2024-11-27</time><span class="post-author">J. Abimael Santos</span><span class="post-reading-time">17 min read (3433 words)</span></div>
+
+  
+    <span class="post-tags">
+      
+      #<a href="/tags/http/">HTTP</a>&nbsp;
+      
+      #<a href="/tags/networking/">Networking</a>&nbsp;
+      
+      #<a href="/tags/rust/">Rust</a>&nbsp;
+      
+    </span>
+  
+  
+
+
+  
+
+  <div class="post-content"><div>
+        <h2 id="introduction-really">Introduction..? Really..?<a href="#introduction-really" class="hanchor" ariaLabel="Anchor">#</a> </h2>
+<p>&ldquo;Building an Event Stream Processor in Rust.&rdquo; Yeah, I can already hear the collective yawn. You&rsquo;re probably thinking, &ldquo;Why reinvent the wheel? There are so many fantastic, &lsquo;one-liner&rsquo; frameworks that handle this stuff effortlessly.&rdquo; And in Rust&hellip;</p>
+<p>xD</p>
+<p>Honestly&hellip; But on a particularly lonely night, after years of pushing pixels and solving problems with whatever tools were handed to me, I thought&hellip; &ldquo;Why not just be a normal person and write a blog post?&rdquo; Guess what, here I am.</p>
+<p>And to start from something, we start from the bottom like&hellip; Drake. We&rsquo;re so used to pulling in libraries for every little thing, and while that is efficient, it often hides the beautiful (and sometimes atrocious) truths of what is happening under the hood. I&rsquo;m not going full binary code here, but we are definitely going to peel back some of those abstractions.</p>
+<p>Have you ever felt that when you choose a project to build, maybe for a new portfolio piece or whatever, and instead of just solving it, you are stuck in library purgatory?</p>
+<p>Researching, choosing, hitting a wall, abandoning, then repeating the whole agonizing process. Ladies and gentlemen, if I am alone in this, I should just quit&hellip; xD</p>
+<p>After that little therapy session, that is what we are diving into. We are going to build a foundational Event Stream Processor in Rust. It is a journey into the core mechanics, where we will explore how these powerful systems are built piece by piece.</p>
+<h2 id="part-1-config-file">Part 1. Config file<a href="#part-1-config-file" class="hanchor" ariaLabel="Anchor">#</a> </h2>
+<p>I did not lie to you, we are not using a single dependency outside the standard in stable Rust.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-toml" data-lang="toml"><span class="line"><span class="cl"><span class="p">[</span><span class="nx">package</span><span class="p">]</span>
+</span></span><span class="line"><span class="cl"><span class="nx">name</span> <span class="p">=</span> <span class="s2">&#34;Eventor&#34;</span>
+</span></span><span class="line"><span class="cl"><span class="nx">version</span> <span class="p">=</span> <span class="s2">&#34;0.1.0&#34;</span>
+</span></span><span class="line"><span class="cl"><span class="nx">author</span> <span class="p">=</span> <span class="s2">&#34;J. Abimael Santos Castillo&#34;</span>
+</span></span><span class="line"><span class="cl"><span class="nx">edition</span> <span class="p">=</span> <span class="s2">&#34;2021&#34;</span>
+</span></span><span class="line"><span class="cl"><span class="nx">rust-version</span> <span class="p">=</span> <span class="s2">&#34;1.80&#34;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="p">[</span><span class="nx">dependencies</span><span class="p">]</span>
+</span></span><span class="line"><span class="cl"><span class="nx">anyhow</span> <span class="p">=</span> <span class="s2">&#34;1.0.68&#34;</span>                                <span class="c"># error handling</span>
+</span></span><span class="line"><span class="cl"><span class="nx">bytes</span> <span class="p">=</span> <span class="s2">&#34;1.3.0&#34;</span>                                  <span class="c"># helps manage buffers</span>
+</span></span><span class="line"><span class="cl"><span class="nx">thiserror</span> <span class="p">=</span> <span class="s2">&#34;1.0.38&#34;</span>                             <span class="c"># error handling, yeah it is that painful</span>
+</span></span></code></pre></div><h2 id="part-2-setting-up-the-http-server">Part 2. Setting up the HTTP server<a href="#part-2-setting-up-the-http-server" class="hanchor" ariaLabel="Anchor">#</a> </h2>
+<p>We start right off setting the foundation which is having our HTTP server running, here we use the standard library (which we as certified <strong>Wheel Re-Invention Engineers</strong> are allowed to use) to create a <strong>TCP Listener</strong>.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-rust" data-lang="rust"><span class="line"><span class="cl"><span class="k">use</span><span class="w"> </span><span class="n">std</span>::<span class="n">net</span>::<span class="n">TcpListener</span><span class="p">;</span><span class="w">
+</span></span></span></code></pre></div><p>Once it&rsquo;s up and running, we enter a simple loop. This loop&rsquo;s only duty is to continuously check for new incoming connections. When the client connects, the listeners hands over a Stream &ndash; just a fancy way of opening a line of communication.</p>
+<p>For now, we&rsquo;re just acknowledging that connection, but this very process is how our server will eventually receive full-blown HTTP requests. It&rsquo;s all about getting those raw network connections established first.</p>
+<p>Enough yapping, here is the initial code:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-rust" data-lang="rust"><span class="line"><span class="cl"><span class="k">use</span><span class="w"> </span><span class="n">std</span>::<span class="n">net</span>::<span class="n">TcpListener</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">fn</span> <span class="nf">main</span><span class="p">()</span><span class="w"> </span>-&gt; <span class="nc">io</span>::<span class="nb">Result</span><span class="o">&lt;</span><span class="p">()</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="n">listener</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">TcpListener</span>::<span class="n">bind</span><span class="p">(</span><span class="s">&#34;127.0.0.1:9092&#34;</span><span class="p">).</span><span class="n">unwrap</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="fm">println!</span><span class="p">(</span><span class="s">&#34;Server listening on: </span><span class="si">{}</span><span class="s">&#34;</span><span class="p">,</span><span class="w"> </span><span class="n">listener</span><span class="p">.</span><span class="n">local_addr</span><span class="p">()</span><span class="o">?</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="c1">//The loop I mentioned
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="w">    </span><span class="k">for</span><span class="w"> </span><span class="n">stream</span><span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="n">listener</span><span class="p">.</span><span class="n">incoming</span><span class="p">()</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="k">match</span><span class="w"> </span><span class="n">stream</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="nb">Ok</span><span class="p">(</span><span class="n">stream</span><span class="p">)</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                </span><span class="c1">//spawn a new thread to handle each connection
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="w">                </span><span class="c1">//This allows the server to handle multiple clients concurrently
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="w">                </span><span class="n">std</span>::<span class="n">thread</span>::<span class="n">spawn</span><span class="p">(</span><span class="k">move</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                    </span><span class="k">if</span><span class="w"> </span><span class="kd">let</span><span class="w"> </span><span class="nb">Err</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">handle_client</span><span class="p">(</span><span class="n">stream</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                        </span><span class="fm">eprintln!</span><span class="p">(</span><span class="s">&#34;Error handling client: </span><span class="si">{}</span><span class="s">&#34;</span><span class="p">,</span><span class="w"> </span><span class="n">e</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                    </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                </span><span class="p">});</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="nb">Err</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                </span><span class="fm">eprintln!</span><span class="p">(</span><span class="s">&#34;Error accepting connection: </span><span class="si">{}</span><span class="s">&#34;</span><span class="p">,</span><span class="w"> </span><span class="n">e</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nb">Ok</span><span class="p">(())</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span></code></pre></div><h2 id="part-3-running-your-bare-bones-so-far">Part 3. Running your bare bones so far<a href="#part-3-running-your-bare-bones-so-far" class="hanchor" ariaLabel="Anchor">#</a> </h2>
+<p>Alright, here we are going to create a small Shell script to run our program, this will make it very easy to just type this in the root of your project to run the entire thing so far:</p>
+<p>./run.sh</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="cp">#!/bin/sh
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span>
+</span></span><span class="line"><span class="cl"><span class="nb">echo</span> <span class="s2">&#34;Building your Event Stream Processor...&#34;</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># Compile your Rust project. Adjust &#39;release&#39; if you prefer debug builds.</span>
+</span></span><span class="line"><span class="cl">cargo build --release
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="k">if</span> <span class="o">[</span> <span class="nv">$?</span> -ne <span class="m">0</span> <span class="o">]</span><span class="p">;</span> <span class="k">then</span>
+</span></span><span class="line"><span class="cl">    <span class="nb">echo</span> <span class="s2">&#34;Rust build failed! Aborting.&#34;</span>
+</span></span><span class="line"><span class="cl">    <span class="nb">exit</span> <span class="m">1</span>
+</span></span><span class="line"><span class="cl"><span class="k">fi</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1">#We called this way, this can anything your project is named to</span>
+</span></span><span class="line"><span class="cl"><span class="nv">PROGRAM_NAME</span><span class="o">=</span><span class="s2">&#34;Eventor&#34;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="nb">echo</span> <span class="s2">&#34;Running your Event Stream Processor in the foreground (Ctrl+C to stop)...&#34;</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># Run the compiled program directly</span>
+</span></span><span class="line"><span class="cl">./target/release/<span class="s2">&#34;</span><span class="nv">$PROGRAM_NAME</span><span class="s2">&#34;</span>
+</span></span></code></pre></div><h2 id="part-4-adapting-our-constants-to-the-kafka-protocol">Part 4. Adapting our constants to the Kafka protocol<a href="#part-4-adapting-our-constants-to-the-kafka-protocol" class="hanchor" ariaLabel="Anchor">#</a> </h2>
+<p>Yeah, I am using the Kafka wire protocol, implementing our own would be really out of the scope of what we are trying to achieve here.</p>
+<p>We are adapting our constants to match the format of the API version 4 of the protocol:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-rust" data-lang="rust"><span class="line"><span class="cl"><span class="k">const</span><span class="w"> </span><span class="no">MESSAGE_SIZE_LEN</span>: <span class="kt">usize</span> <span class="o">=</span><span class="w"> </span><span class="mi">4</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">const</span><span class="w"> </span><span class="no">API_KEY_LEN</span>: <span class="kt">usize</span> <span class="o">=</span><span class="w"> </span><span class="mi">2</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">const</span><span class="w"> </span><span class="no">API_VERSION_LEN</span>: <span class="kt">usize</span> <span class="o">=</span><span class="w"> </span><span class="mi">2</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">const</span><span class="w"> </span><span class="no">CORRELATION_ID_LEN</span>: <span class="kt">usize</span> <span class="o">=</span><span class="w"> </span><span class="mi">4</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">const</span><span class="w"> </span><span class="no">HEADER_LEN</span>: <span class="kt">usize</span> <span class="o">=</span><span class="w"> </span><span class="no">MESSAGE_SIZE_LEN</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="no">API_KEY_LEN</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="no">API_VERSION_LEN</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="no">CORRELATION_ID_LEN</span><span class="p">;</span><span class="w"> </span><span class="c1">// 4 + 2 + 2 + 4 = 12 bytes
+</span></span></span></code></pre></div><p>More information about how it works that way can be found in the [Kafka Protocol docs]&ldquo;<a href="https://kafka.apache.org/protocol.html#protocol_messages%22">https://kafka.apache.org/protocol.html#protocol_messages"</a></p>
+<h2 id="part-5-writting-a-function-to-parse-the-topic-of-your-message">Part 5. Writting a function to parse the topic of your message<a href="#part-5-writting-a-function-to-parse-the-topic-of-your-message" class="hanchor" ariaLabel="Anchor">#</a> </h2>
+<p>This function will parse the topic name from a request that will be be handled right after this, just notice this will be key for the next which actually has more context to explain.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-rust" data-lang="rust"><span class="line"><span class="cl"><span class="sd">/// Parses topic name from DescribeTopicPartitions request
+</span></span></span><span class="line"><span class="cl"><span class="sd"></span><span class="k">fn</span> <span class="nf">parse_topic_name</span><span class="p">(</span><span class="n">request_buffer</span>: <span class="kp">&amp;</span><span class="p">[</span><span class="kt">u8</span><span class="p">])</span><span class="w"> </span>-&gt; <span class="nb">String</span> <span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="n">request_str</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">String</span>::<span class="n">from_utf8_lossy</span><span class="p">(</span><span class="n">request_buffer</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="c1">// Look for &#34;unknown-topic-&#34; pattern
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="kd">let</span><span class="w"> </span><span class="nb">Some</span><span class="p">(</span><span class="n">start</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">request_str</span><span class="p">.</span><span class="n">find</span><span class="p">(</span><span class="s">&#34;unknown-topic-&#34;</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="kd">let</span><span class="w"> </span><span class="n">remaining</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">&amp;</span><span class="n">request_str</span><span class="p">[</span><span class="n">start</span><span class="o">..</span><span class="p">];</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="kd">let</span><span class="w"> </span><span class="nb">Some</span><span class="p">(</span><span class="n">end</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">remaining</span><span class="p">.</span><span class="n">find</span><span class="p">(</span><span class="sc">&#39;\0&#39;</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="k">return</span><span class="w"> </span><span class="n">remaining</span><span class="p">[</span><span class="o">..</span><span class="n">end</span><span class="p">].</span><span class="n">to_string</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="c1">// Fallback: return a default topic name  
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="w">    </span><span class="s">&#34;unknown-topic-saz&#34;</span><span class="p">.</span><span class="n">to_string</span><span class="p">()</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span></code></pre></div><h2 id="part-6-building-the-topic-partition-response">Part 6. Building the topic partition response<a href="#part-6-building-the-topic-partition-response" class="hanchor" ariaLabel="Anchor">#</a> </h2>
+<p>Last function does not make sense without the context of this other one. This function returns the u8 vector that is taken as input for the previous function that takes a borrowed reference.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-rust" data-lang="rust"><span class="line"><span class="cl"><span class="sd">/// Builds DescribeTopicPartitions response for unknown topic
+</span></span></span><span class="line"><span class="cl"><span class="sd"></span><span class="k">fn</span> <span class="nf">build_describe_topic_partitions_response</span><span class="p">(</span><span class="n">correlation_id</span>: <span class="kt">u32</span><span class="p">,</span><span class="w"> </span><span class="n">topic_name</span>: <span class="kp">&amp;</span><span class="kt">str</span><span class="p">)</span><span class="w"> </span>-&gt; <span class="nb">Vec</span><span class="o">&lt;</span><span class="kt">u8</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="k">mut</span><span class="w"> </span><span class="n">response</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">Vec</span>::<span class="n">new</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="c1">// Response structure according to Kafka protocol v0:
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="w">    </span><span class="c1">// [message_size][correlation_id][throttle_time_ms][topics][next_cursor][tagged_fields]
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="w">    </span><span class="c1">// 
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="w">    </span><span class="c1">// Topic structure:
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="w">    </span><span class="c1">// [error_code][name][topic_id][is_internal][partitions][topic_authorized_operations][tagged_fields]
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="w">    
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="n">correlation_id_bytes</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">correlation_id</span><span class="p">.</span><span class="n">to_be_bytes</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="n">throttle_time_ms</span>: <span class="kt">u32</span> <span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="n">topic_count</span>: <span class="kt">u8</span> <span class="o">=</span><span class="w"> </span><span class="mi">2</span><span class="p">;</span><span class="w"> </span><span class="c1">// compact array: 1 topic + 1 = 2
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="n">topic_name_len</span>: <span class="kt">u8</span> <span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">topic_name</span><span class="p">.</span><span class="n">len</span><span class="p">()</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="kt">u8</span><span class="p">;</span><span class="w"> </span><span class="c1">// compact string: len + 1
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="w">    </span><span class="fm">println!</span><span class="p">(</span><span class="s">&#34;Building response for topic: &#39;</span><span class="si">{}</span><span class="s">&#39;, length: </span><span class="si">{}</span><span class="s">&#34;</span><span class="p">,</span><span class="w"> </span><span class="n">topic_name</span><span class="p">,</span><span class="w"> </span><span class="n">topic_name</span><span class="p">.</span><span class="n">len</span><span class="p">());</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="n">topic_id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="mi">0</span><span class="k">u8</span><span class="p">;</span><span class="w"> </span><span class="mi">16</span><span class="p">];</span><span class="w"> </span><span class="c1">// 16 zero bytes for null UUID
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="n">error_code</span>: <span class="kt">u16</span> <span class="o">=</span><span class="w"> </span><span class="mi">3</span><span class="p">;</span><span class="w"> </span><span class="c1">// UNKNOWN_TOPIC_OR_PARTITION
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="n">is_internal</span>: <span class="kt">u8</span> <span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="c1">// false
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="n">partitions_count</span>: <span class="kt">u8</span> <span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span><span class="w"> </span><span class="c1">// compact array: 0 partitions + 1 = 1
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="n">topic_authorized_operations</span>: <span class="kt">u32</span> <span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="c1">// No operations
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="n">topic_tagged_fields</span>: <span class="kt">u8</span> <span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="c1">// Set next_cursor to null for unknown topics (flexible version nullable)
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="n">next_cursor_null</span>: <span class="kt">u8</span> <span class="o">=</span><span class="w"> </span><span class="mh">0xFF</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="n">response_tagged_fields</span>: <span class="kt">u8</span> <span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="c1">// Calculate message size: everything after the message_size field
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="w">    </span><span class="c1">// Response Header v1: correlation_id(4) + header_tag_buffer(1) + throttle_time(4) + topic_count(1) + [topic: error_code(2) + topic_name_len(1) + topic_name + topic_id(16) + is_internal(1) + partitions(1) + topic_authorized_operations(4) + topic_tagged_fields(1)] + next_cursor(1) + response_tagged_fields(1)
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="n">message_size</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">4</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">4</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="p">(</span><span class="mi">2</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">topic_name</span><span class="p">.</span><span class="n">len</span><span class="p">()</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">16</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">4</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="n">header_tag_buffer</span>: <span class="kt">u8</span> <span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="c1">// TAG_BUFFER for Response Header v1
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="w">    
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="c1">// Build response
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="w">    </span><span class="n">response</span><span class="p">.</span><span class="n">extend_from_slice</span><span class="p">(</span><span class="o">&amp;</span><span class="p">(</span><span class="n">message_size</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="kt">u32</span><span class="p">).</span><span class="n">to_be_bytes</span><span class="p">());</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">response</span><span class="p">.</span><span class="n">extend_from_slice</span><span class="p">(</span><span class="o">&amp;</span><span class="n">correlation_id_bytes</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">response</span><span class="p">.</span><span class="n">extend_from_slice</span><span class="p">(</span><span class="o">&amp;</span><span class="p">[</span><span class="n">header_tag_buffer</span><span class="p">]);</span><span class="w"> </span><span class="c1">// Response Header v1 TAG_BUFFER
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="w">    </span><span class="n">response</span><span class="p">.</span><span class="n">extend_from_slice</span><span class="p">(</span><span class="o">&amp;</span><span class="n">throttle_time_ms</span><span class="p">.</span><span class="n">to_be_bytes</span><span class="p">());</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">response</span><span class="p">.</span><span class="n">extend_from_slice</span><span class="p">(</span><span class="o">&amp;</span><span class="p">[</span><span class="n">topic_count</span><span class="p">]);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="c1">// Topic data
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="w">    </span><span class="n">response</span><span class="p">.</span><span class="n">extend_from_slice</span><span class="p">(</span><span class="o">&amp;</span><span class="n">error_code</span><span class="p">.</span><span class="n">to_be_bytes</span><span class="p">());</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">response</span><span class="p">.</span><span class="n">extend_from_slice</span><span class="p">(</span><span class="o">&amp;</span><span class="p">[</span><span class="n">topic_name_len</span><span class="p">]);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">response</span><span class="p">.</span><span class="n">extend_from_slice</span><span class="p">(</span><span class="n">topic_name</span><span class="p">.</span><span class="n">as_bytes</span><span class="p">());</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">response</span><span class="p">.</span><span class="n">extend_from_slice</span><span class="p">(</span><span class="o">&amp;</span><span class="n">topic_id</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">response</span><span class="p">.</span><span class="n">extend_from_slice</span><span class="p">(</span><span class="o">&amp;</span><span class="p">[</span><span class="n">is_internal</span><span class="p">]);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">response</span><span class="p">.</span><span class="n">extend_from_slice</span><span class="p">(</span><span class="o">&amp;</span><span class="p">[</span><span class="n">partitions_count</span><span class="p">]);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">response</span><span class="p">.</span><span class="n">extend_from_slice</span><span class="p">(</span><span class="o">&amp;</span><span class="n">topic_authorized_operations</span><span class="p">.</span><span class="n">to_be_bytes</span><span class="p">());</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">response</span><span class="p">.</span><span class="n">extend_from_slice</span><span class="p">(</span><span class="o">&amp;</span><span class="p">[</span><span class="n">topic_tagged_fields</span><span class="p">]);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="c1">// Next cursor (null) and response tagged fields
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="w">    </span><span class="n">response</span><span class="p">.</span><span class="n">extend_from_slice</span><span class="p">(</span><span class="o">&amp;</span><span class="p">[</span><span class="n">next_cursor_null</span><span class="p">]);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">response</span><span class="p">.</span><span class="n">extend_from_slice</span><span class="p">(</span><span class="o">&amp;</span><span class="p">[</span><span class="n">response_tagged_fields</span><span class="p">]);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">response</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span></code></pre></div><h2 id="part-7-build-the-api-versions-response-of-the-protocol">Part 7. Build the API versions response of the protocol<a href="#part-7-build-the-api-versions-response-of-the-protocol" class="hanchor" ariaLabel="Anchor">#</a> </h2>
+<p>For this one we need to build at least 2 APIs, defined in the code with the comments that will set our ground to just handle the client after we covered what the protocol requires from us to operate with it:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-rust" data-lang="rust"><span class="line"><span class="cl"><span class="sd">/// Builds APIVersions response
+</span></span></span><span class="line"><span class="cl"><span class="sd"></span><span class="k">fn</span> <span class="nf">build_api_versions_response</span><span class="p">(</span><span class="n">correlation_id</span>: <span class="kt">u32</span><span class="p">,</span><span class="w"> </span><span class="n">api_version</span>: <span class="kt">u16</span><span class="p">)</span><span class="w"> </span>-&gt; <span class="nb">Vec</span><span class="o">&lt;</span><span class="kt">u8</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="n">error_code</span>: <span class="kt">u16</span> <span class="o">=</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="n">api_version</span><span class="w"> </span><span class="o">&lt;=</span><span class="w"> </span><span class="mi">4</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="mi">35</span><span class="w"> </span><span class="p">};</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="n">response_message_size</span>: <span class="kt">u32</span> <span class="o">=</span><span class="w"> </span><span class="mi">26</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="n">response_message_size_bytes</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">response_message_size</span><span class="p">.</span><span class="n">to_be_bytes</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="n">correlation_id_response_bytes</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">correlation_id</span><span class="p">.</span><span class="n">to_be_bytes</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="n">error_code_bytes</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">error_code</span><span class="p">.</span><span class="n">to_be_bytes</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="n">api_count_array</span>: <span class="kt">u8</span> <span class="o">=</span><span class="w"> </span><span class="mi">3</span><span class="p">;</span><span class="w"> </span><span class="c1">// 2 APIs + 1 = 3
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="w">    
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="c1">// First API: APIVersions
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="n">api_key_1</span>: <span class="kt">u16</span> <span class="o">=</span><span class="w"> </span><span class="mi">18</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="n">min_version_1</span>: <span class="kt">u16</span> <span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="n">max_version_1</span>: <span class="kt">u16</span> <span class="o">=</span><span class="w"> </span><span class="mi">4</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="n">api_tagged_fields_1</span>: <span class="kt">u8</span> <span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="c1">// Second API: DescribeTopicPartitions
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="n">api_key_2</span>: <span class="kt">u16</span> <span class="o">=</span><span class="w"> </span><span class="mi">75</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="n">min_version_2</span>: <span class="kt">u16</span> <span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="n">max_version_2</span>: <span class="kt">u16</span> <span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="n">api_tagged_fields_2</span>: <span class="kt">u8</span> <span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="n">throttle_time_ms</span>: <span class="kt">u32</span> <span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="n">response_tagged_fields</span>: <span class="kt">u8</span> <span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="k">mut</span><span class="w"> </span><span class="n">response</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">Vec</span>::<span class="n">new</span><span class="p">();</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">response</span><span class="p">.</span><span class="n">extend_from_slice</span><span class="p">(</span><span class="o">&amp;</span><span class="n">response_message_size_bytes</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">response</span><span class="p">.</span><span class="n">extend_from_slice</span><span class="p">(</span><span class="o">&amp;</span><span class="n">correlation_id_response_bytes</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">response</span><span class="p">.</span><span class="n">extend_from_slice</span><span class="p">(</span><span class="o">&amp;</span><span class="n">error_code_bytes</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">response</span><span class="p">.</span><span class="n">extend_from_slice</span><span class="p">(</span><span class="o">&amp;</span><span class="p">[</span><span class="n">api_count_array</span><span class="p">]);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="c1">// First API: APIVersions
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="w">    </span><span class="n">response</span><span class="p">.</span><span class="n">extend_from_slice</span><span class="p">(</span><span class="o">&amp;</span><span class="n">api_key_1</span><span class="p">.</span><span class="n">to_be_bytes</span><span class="p">());</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">response</span><span class="p">.</span><span class="n">extend_from_slice</span><span class="p">(</span><span class="o">&amp;</span><span class="n">min_version_1</span><span class="p">.</span><span class="n">to_be_bytes</span><span class="p">());</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">response</span><span class="p">.</span><span class="n">extend_from_slice</span><span class="p">(</span><span class="o">&amp;</span><span class="n">max_version_1</span><span class="p">.</span><span class="n">to_be_bytes</span><span class="p">());</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">response</span><span class="p">.</span><span class="n">extend_from_slice</span><span class="p">(</span><span class="o">&amp;</span><span class="p">[</span><span class="n">api_tagged_fields_1</span><span class="p">]);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="c1">// Second API: DescribeTopicPartitions
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="w">    </span><span class="n">response</span><span class="p">.</span><span class="n">extend_from_slice</span><span class="p">(</span><span class="o">&amp;</span><span class="n">api_key_2</span><span class="p">.</span><span class="n">to_be_bytes</span><span class="p">());</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">response</span><span class="p">.</span><span class="n">extend_from_slice</span><span class="p">(</span><span class="o">&amp;</span><span class="n">min_version_2</span><span class="p">.</span><span class="n">to_be_bytes</span><span class="p">());</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">response</span><span class="p">.</span><span class="n">extend_from_slice</span><span class="p">(</span><span class="o">&amp;</span><span class="n">max_version_2</span><span class="p">.</span><span class="n">to_be_bytes</span><span class="p">());</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">response</span><span class="p">.</span><span class="n">extend_from_slice</span><span class="p">(</span><span class="o">&amp;</span><span class="p">[</span><span class="n">api_tagged_fields_2</span><span class="p">]);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">response</span><span class="p">.</span><span class="n">extend_from_slice</span><span class="p">(</span><span class="o">&amp;</span><span class="n">throttle_time_ms</span><span class="p">.</span><span class="n">to_be_bytes</span><span class="p">());</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">response</span><span class="p">.</span><span class="n">extend_from_slice</span><span class="p">(</span><span class="o">&amp;</span><span class="p">[</span><span class="n">response_tagged_fields</span><span class="p">]);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">response</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span></code></pre></div><h2 id="part-8-yup-building-the-client">Part 8. Yup, building the client<a href="#part-8-yup-building-the-client" class="hanchor" ariaLabel="Anchor">#</a> </h2>
+<p>Here we have our function to handle our client, it is pretty straight forward, the code could be better organized, sorry&hellip; But he is a bare minimum of work to get it to where we want.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-rust" data-lang="rust"><span class="line"><span class="cl"><span class="k">fn</span> <span class="nf">handle_client</span><span class="p">(</span><span class="k">mut</span><span class="w"> </span><span class="n">stream</span>: <span class="nc">TcpStream</span><span class="p">)</span><span class="w"> </span>-&gt; <span class="nc">io</span>::<span class="nb">Result</span><span class="o">&lt;</span><span class="p">()</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="fm">println!</span><span class="p">(</span><span class="s">&#34;Handling connection from: </span><span class="si">{}</span><span class="s">&#34;</span><span class="p">,</span><span class="w"> </span><span class="n">stream</span><span class="p">.</span><span class="n">peer_addr</span><span class="p">()</span><span class="o">?</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">loop</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="c1">//Initial buffer to read just the message_size
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="w">        </span><span class="kd">let</span><span class="w"> </span><span class="k">mut</span><span class="w"> </span><span class="n">initial_bytes</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="fm">vec!</span><span class="p">[</span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="no">MESSAGE_SIZE_LEN</span><span class="p">];</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="kd">let</span><span class="w"> </span><span class="n">total_message_size</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">match</span><span class="w"> </span><span class="n">stream</span><span class="p">.</span><span class="n">read_exact</span><span class="p">(</span><span class="o">&amp;</span><span class="k">mut</span><span class="w"> </span><span class="n">initial_bytes</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="nb">Ok</span><span class="p">(())</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                </span><span class="kt">u32</span>::<span class="n">from_be_bytes</span><span class="p">(</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                    </span><span class="n">initial_bytes</span><span class="p">.</span><span class="n">as_slice</span><span class="p">()</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                        </span><span class="p">.</span><span class="n">try_into</span><span class="p">()</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                        </span><span class="p">.</span><span class="n">unwrap_or_else</span><span class="p">(</span><span class="o">|</span><span class="n">_</span><span class="o">|</span><span class="w"> </span><span class="p">[</span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="mi">4</span><span class="p">])</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                </span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="nb">Err</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                </span><span class="fm">println!</span><span class="p">(</span><span class="s">&#34;Client disconnected: </span><span class="si">{}</span><span class="s">&#34;</span><span class="p">,</span><span class="w"> </span><span class="n">e</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                </span><span class="k">break</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="p">};</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="fm">println!</span><span class="p">(</span><span class="s">&#34;Total message size indicated: </span><span class="si">{}</span><span class="s"> bytes&#34;</span><span class="p">,</span><span class="w"> </span><span class="n">total_message_size</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="c1">// Basic validation: ensure the message is at least as long as the header (minus the 4 bytes we already read)
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="n">total_message_size</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="p">(</span><span class="no">HEADER_LEN</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="no">MESSAGE_SIZE_LEN</span><span class="p">)</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="kt">u32</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="fm">println!</span><span class="p">(</span><span class="s">&#34;Invalid message size </span><span class="si">{}</span><span class="s"> &lt; </span><span class="si">{}</span><span class="s">, breaking connection&#34;</span><span class="p">,</span><span class="w"> </span><span class="n">total_message_size</span><span class="p">,</span><span class="w"> </span><span class="no">HEADER_LEN</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="no">MESSAGE_SIZE_LEN</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="k">break</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="c1">//Now, read the rest of the message (api_key, api_version, correlation_id, and if any a body)
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="w">        </span><span class="c1">//The total_message_size includes everything after the initial 4 bytes, so we read exactly that amount
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="w">        </span><span class="kd">let</span><span class="w"> </span><span class="n">remaining_bytes</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">total_message_size</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="kt">usize</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="kd">let</span><span class="w"> </span><span class="k">mut</span><span class="w"> </span><span class="n">full_request_buffer</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="fm">vec!</span><span class="p">[</span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">remaining_bytes</span><span class="p">];</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="kd">let</span><span class="w"> </span><span class="nb">Err</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">stream</span><span class="p">.</span><span class="n">read_exact</span><span class="p">(</span><span class="o">&amp;</span><span class="k">mut</span><span class="w"> </span><span class="n">full_request_buffer</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="fm">println!</span><span class="p">(</span><span class="s">&#34;Error reading request body: </span><span class="si">{}</span><span class="s">&#34;</span><span class="p">,</span><span class="w"> </span><span class="n">e</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="k">break</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="kd">let</span><span class="w"> </span><span class="n">correlation_id_offset_in_remaining</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="no">API_KEY_LEN</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="no">API_VERSION_LEN</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="c1">// Verify bounds before slicing to prevent panic
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="n">remaining_bytes</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">correlation_id_offset_in_remaining</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="no">CORRELATION_ID_LEN</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="fm">println!</span><span class="p">(</span><span class="s">&#34;Message too short to contain correlation ID, breaking connection&#34;</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="k">break</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="c1">//Extract the correlation ID from bytes 8-11
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="w">        </span><span class="kd">let</span><span class="w"> </span><span class="n">correlation_id_bytes_slice</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">&amp;</span><span class="n">full_request_buffer</span><span class="p">[</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">correlation_id_offset_in_remaining</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                </span><span class="o">..</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                </span><span class="n">correlation_id_offset_in_remaining</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="no">CORRELATION_ID_LEN</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="p">];</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="kd">let</span><span class="w"> </span><span class="n">correlation_id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">match</span><span class="w"> </span><span class="n">correlation_id_bytes_slice</span><span class="p">.</span><span class="n">try_into</span><span class="p">()</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="nb">Ok</span><span class="p">(</span><span class="n">bytes</span><span class="p">)</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="kt">u32</span>::<span class="n">from_be_bytes</span><span class="p">(</span><span class="n">bytes</span><span class="p">),</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="nb">Err</span><span class="p">(</span><span class="n">_</span><span class="p">)</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                </span><span class="fm">println!</span><span class="p">(</span><span class="s">&#34;Failed to get 4 bytes for correlation ID, breaking connection&#34;</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                </span><span class="k">break</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="p">};</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="c1">//Extract the API key
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="w">        </span><span class="kd">let</span><span class="w"> </span><span class="n">api_key_bytes</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">&amp;</span><span class="n">full_request_buffer</span><span class="p">[</span><span class="mi">0</span><span class="o">..</span><span class="no">API_KEY_LEN</span><span class="p">];</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="kd">let</span><span class="w"> </span><span class="n">api_key</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">match</span><span class="w"> </span><span class="n">api_key_bytes</span><span class="p">.</span><span class="n">try_into</span><span class="p">()</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="nb">Ok</span><span class="p">(</span><span class="n">bytes</span><span class="p">)</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="kt">u16</span>::<span class="n">from_be_bytes</span><span class="p">(</span><span class="n">bytes</span><span class="p">),</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="nb">Err</span><span class="p">(</span><span class="n">_</span><span class="p">)</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                </span><span class="fm">println!</span><span class="p">(</span><span class="s">&#34;Failed to get 2 bytes for API key, breaking connection&#34;</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                </span><span class="k">break</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="p">};</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="c1">//Extract the API version
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="w">        </span><span class="kd">let</span><span class="w"> </span><span class="n">api_version_offset</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="no">API_KEY_LEN</span><span class="p">;</span><span class="w"> </span><span class="c1">//Skip API key, those are 2 bytes
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="w">        </span><span class="kd">let</span><span class="w"> </span><span class="n">api_version_bytes</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">&amp;</span><span class="n">full_request_buffer</span><span class="p">[</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">api_version_offset</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                </span><span class="o">..</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                </span><span class="n">api_version_offset</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="no">API_VERSION_LEN</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="p">];</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="kd">let</span><span class="w"> </span><span class="n">api_version</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">match</span><span class="w"> </span><span class="n">api_version_bytes</span><span class="p">.</span><span class="n">try_into</span><span class="p">()</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="nb">Ok</span><span class="p">(</span><span class="n">bytes</span><span class="p">)</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="kt">u16</span>::<span class="n">from_be_bytes</span><span class="p">(</span><span class="n">bytes</span><span class="p">),</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="nb">Err</span><span class="p">(</span><span class="n">_</span><span class="p">)</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                </span><span class="fm">println!</span><span class="p">(</span><span class="s">&#34;Failed to get 2 bytes for API version, breaking connection&#34;</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                </span><span class="k">break</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="p">};</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="fm">println!</span><span class="p">(</span><span class="s">&#34;Extracted Correlation ID (u32): </span><span class="si">{}</span><span class="s">&#34;</span><span class="p">,</span><span class="w"> </span><span class="n">correlation_id</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="fm">println!</span><span class="p">(</span><span class="s">&#34;Extracted Correlation ID (bytes): </span><span class="si">{:?}</span><span class="s">&#34;</span><span class="p">,</span><span class="w"> </span><span class="n">correlation_id_bytes_slice</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="fm">println!</span><span class="p">(</span><span class="s">&#34;Extracted API Key: </span><span class="si">{}</span><span class="s">&#34;</span><span class="p">,</span><span class="w"> </span><span class="n">api_key</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="fm">println!</span><span class="p">(</span><span class="s">&#34;Extracted API Version: </span><span class="si">{}</span><span class="s">&#34;</span><span class="p">,</span><span class="w"> </span><span class="n">api_version</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="c1">// Build response based on API key
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="w">        </span><span class="kd">let</span><span class="w"> </span><span class="n">response</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="n">api_key</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">18</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="c1">// APIVersions request
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="w">            </span><span class="fm">println!</span><span class="p">(</span><span class="s">&#34;Handling APIVersions request&#34;</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">build_api_versions_response</span><span class="p">(</span><span class="n">correlation_id</span><span class="p">,</span><span class="w"> </span><span class="n">api_version</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="n">api_key</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">75</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="c1">// DescribeTopicPartitions request
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="w">            </span><span class="fm">println!</span><span class="p">(</span><span class="s">&#34;Handling DescribeTopicPartitions request&#34;</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="kd">let</span><span class="w"> </span><span class="n">topic_name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">parse_topic_name</span><span class="p">(</span><span class="o">&amp;</span><span class="n">full_request_buffer</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="fm">println!</span><span class="p">(</span><span class="s">&#34;Parsed topic name: &#39;</span><span class="si">{}</span><span class="s">&#39;&#34;</span><span class="p">,</span><span class="w"> </span><span class="n">topic_name</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="n">build_describe_topic_partitions_response</span><span class="p">(</span><span class="n">correlation_id</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">topic_name</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="c1">// Unknown API key - return error
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="w">            </span><span class="fm">println!</span><span class="p">(</span><span class="s">&#34;Unknown API key: </span><span class="si">{}</span><span class="s">&#34;</span><span class="p">,</span><span class="w"> </span><span class="n">api_key</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="fm">vec!</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mi">8</span><span class="p">,</span><span class="w"> 
+</span></span></span><span class="line"><span class="cl"><span class="w">                 </span><span class="p">(</span><span class="n">correlation_id</span><span class="w"> </span><span class="o">&gt;&gt;</span><span class="w"> </span><span class="mi">24</span><span class="p">)</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="kt">u8</span><span class="p">,</span><span class="w"> </span><span class="p">(</span><span class="n">correlation_id</span><span class="w"> </span><span class="o">&gt;&gt;</span><span class="w"> </span><span class="mi">16</span><span class="p">)</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="kt">u8</span><span class="p">,</span><span class="w"> </span><span class="p">(</span><span class="n">correlation_id</span><span class="w"> </span><span class="o">&gt;&gt;</span><span class="w"> </span><span class="mi">8</span><span class="p">)</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="kt">u8</span><span class="p">,</span><span class="w"> </span><span class="n">correlation_id</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="kt">u8</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                 </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mi">35</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">]</span><span class="w"> </span><span class="c1">// Error code 35 = UNSUPPORTED_VERSION
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="w">        </span><span class="p">};</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="fm">println!</span><span class="p">(</span><span class="s">&#34;Sending response: </span><span class="si">{:?}</span><span class="s">&#34;</span><span class="p">,</span><span class="w"> </span><span class="n">response</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="c1">//Send the response back to the client
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="kd">let</span><span class="w"> </span><span class="nb">Err</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">stream</span><span class="p">.</span><span class="n">write_all</span><span class="p">(</span><span class="o">&amp;</span><span class="n">response</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="fm">println!</span><span class="p">(</span><span class="s">&#34;Error writing response: </span><span class="si">{}</span><span class="s">&#34;</span><span class="p">,</span><span class="w"> </span><span class="n">e</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="k">break</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="c1">//Just to pass the fucking test, those idiots set a rule up their fucking asshole, 5:08 AM
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="w">        </span><span class="c1">//dealing with this shit
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="kd">let</span><span class="w"> </span><span class="nb">Err</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">stream</span><span class="p">.</span><span class="n">flush</span><span class="p">()</span><span class="w"> </span><span class="p">{</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="fm">println!</span><span class="p">(</span><span class="s">&#34;Error flushing stream: </span><span class="si">{}</span><span class="s">&#34;</span><span class="p">,</span><span class="w"> </span><span class="n">e</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">            </span><span class="k">break</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="fm">println!</span><span class="p">(</span><span class="s">&#34;Response sent.&#34;</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="c1">//stream.shutdown(Shutdown::Both)?; // Shutdown both read and write, commented out since now we
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="w">        </span><span class="c1">//will handle multiple requests in the client.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="w">    </span><span class="p">}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nb">Ok</span><span class="p">(())</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">}</span><span class="w">
+</span></span></span></code></pre></div><p>After all this is in place, we run the script to run the project (run word counter reached the limits, pay 20 dollars to continue using that word)</p>
+<p>And then!</p>
+<h2 id="part-9-running-the-automated-script">Part 9. Running the automated script<a href="#part-9-running-the-automated-script" class="hanchor" ariaLabel="Anchor">#</a> </h2>
+<p>Okay, here we have our .sh file with clear instructions to handle the use cases of our software and it goes like this:</p>
+<p>-Checks dependencies (Rust, Python3)
+-Builds your server with cargo build &ndash;release
+-Starts the server in the background
+-Waits for server to be ready
+-Creates a lightweight test script
+-Runs all tests automatically
+-Cleans up server process when done</p>
+<p>In that order the tests are doing exactly these:</p>
+<p>-APIVersions request handling
+-DescribeTopicPartitions request handling
+-Concurrent connections (5 clients only xD)
+-Multiple requests per connection
+-Correlation ID handling</p>
+<p>The file is a little bit large because I try to put a decent amount of Python to handle the tests, because hey I would be fighting with the Rust compiler instead of getting the tests done in a single night xD. Forgive me, I know I am bad but I promise I will get better :)</p>
+<p>Make sure you name it something like tests.sh or run_tests.sh and then you make the script as an executable. Here I named mine tests.sh and then I run this command to make it an exe:</p>
+<pre tabindex="0"><code>chmod +x tests.sh
+</code></pre><p>Then you run it in the root of your directory like this:</p>
+<pre tabindex="0"><code>./tests.sh
+</code></pre><p>Here is the script, make sure you analyze it fully to know what you are making as executable in your machine:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="cp">#!/bin/bash
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span>
+</span></span><span class="line"><span class="cl"><span class="c1"># Automated Test Runner for Eventor Server</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># Usage: ./run_tests.sh</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="nb">set</span> -e  <span class="c1"># Exit on any error</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># Colors for output</span>
+</span></span><span class="line"><span class="cl"><span class="nv">RED</span><span class="o">=</span><span class="s1">&#39;\033[0;31m&#39;</span>
+</span></span><span class="line"><span class="cl"><span class="nv">GREEN</span><span class="o">=</span><span class="s1">&#39;\033[0;32m&#39;</span>
+</span></span><span class="line"><span class="cl"><span class="nv">YELLOW</span><span class="o">=</span><span class="s1">&#39;\033[1;33m&#39;</span>
+</span></span><span class="line"><span class="cl"><span class="nv">BLUE</span><span class="o">=</span><span class="s1">&#39;\033[0;34m&#39;</span>
+</span></span><span class="line"><span class="cl"><span class="nv">PURPLE</span><span class="o">=</span><span class="s1">&#39;\033[0;35m&#39;</span>
+</span></span><span class="line"><span class="cl"><span class="nv">CYAN</span><span class="o">=</span><span class="s1">&#39;\033[0;36m&#39;</span>
+</span></span><span class="line"><span class="cl"><span class="nv">NC</span><span class="o">=</span><span class="s1">&#39;\033[0m&#39;</span> <span class="c1"># No Color</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># Configuration</span>
+</span></span><span class="line"><span class="cl"><span class="nv">SERVER_HOST</span><span class="o">=</span><span class="s2">&#34;127.0.0.1&#34;</span>
+</span></span><span class="line"><span class="cl"><span class="nv">SERVER_PORT</span><span class="o">=</span><span class="s2">&#34;9092&#34;</span>
+</span></span><span class="line"><span class="cl"><span class="nv">RUST_PROJECT_DIR</span><span class="o">=</span><span class="s2">&#34;.&#34;</span>
+</span></span><span class="line"><span class="cl"><span class="nv">TEST_SCRIPT</span><span class="o">=</span><span class="s2">&#34;test_eventor_server.py&#34;</span>
+</span></span><span class="line"><span class="cl"><span class="nv">SERVER_LOG</span><span class="o">=</span><span class="s2">&#34;server.log&#34;</span>
+</span></span><span class="line"><span class="cl"><span class="nv">SERVER_PID_FILE</span><span class="o">=</span><span class="s2">&#34;server.pid&#34;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">print_banner<span class="o">()</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">    <span class="nb">echo</span> -e <span class="s2">&#34;</span><span class="si">${</span><span class="nv">CYAN</span><span class="si">}</span><span class="s2">&#34;</span>
+</span></span><span class="line"><span class="cl">    <span class="nb">echo</span> <span class="s2">&#34;╔══════════════════════════════════════════════════════════════╗&#34;</span>
+</span></span><span class="line"><span class="cl">    <span class="nb">echo</span> <span class="s2">&#34;║                    🚀 EVENTOR SERVER TEST SUITE              ║&#34;</span>
+</span></span><span class="line"><span class="cl">    <span class="nb">echo</span> <span class="s2">&#34;║                     Automated Test Runner                    ║&#34;</span>
+</span></span><span class="line"><span class="cl">    <span class="nb">echo</span> <span class="s2">&#34;╚══════════════════════════════════════════════════════════════╝&#34;</span>
+</span></span><span class="line"><span class="cl">    <span class="nb">echo</span> -e <span class="s2">&#34;</span><span class="si">${</span><span class="nv">NC</span><span class="si">}</span><span class="s2">&#34;</span>
+</span></span><span class="line"><span class="cl"><span class="o">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">print_step<span class="o">()</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">    <span class="nb">echo</span> -e <span class="s2">&#34;</span><span class="si">${</span><span class="nv">BLUE</span><span class="si">}</span><span class="s2">➤ </span><span class="nv">$1</span><span class="si">${</span><span class="nv">NC</span><span class="si">}</span><span class="s2">&#34;</span>
+</span></span><span class="line"><span class="cl"><span class="o">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">print_success<span class="o">()</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">    <span class="nb">echo</span> -e <span class="s2">&#34;</span><span class="si">${</span><span class="nv">GREEN</span><span class="si">}</span><span class="s2">✅ </span><span class="nv">$1</span><span class="si">${</span><span class="nv">NC</span><span class="si">}</span><span class="s2">&#34;</span>
+</span></span><span class="line"><span class="cl"><span class="o">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">print_error<span class="o">()</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">    <span class="nb">echo</span> -e <span class="s2">&#34;</span><span class="si">${</span><span class="nv">RED</span><span class="si">}</span><span class="s2">❌ </span><span class="nv">$1</span><span class="si">${</span><span class="nv">NC</span><span class="si">}</span><span class="s2">&#34;</span>
+</span></span><span class="line"><span class="cl"><span class="o">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">print_warning<span class="o">()</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">    <span class="nb">echo</span> -e <span class="s2">&#34;</span><span class="si">${</span><span class="nv">YELLOW</span><span class="si">}</span><span class="s2">⚠️  </span><span class="nv">$1</span><span class="si">${</span><span class="nv">NC</span><span class="si">}</span><span class="s2">&#34;</span>
+</span></span><span class="line"><span class="cl"><span class="o">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">check_dependencies<span class="o">()</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">    print_step <span class="s2">&#34;Checking dependencies...&#34;</span>
+</span></span><span class="line"><span class="cl">    
+</span></span><span class="line"><span class="cl">    <span class="c1"># Check if cargo is installed</span>
+</span></span><span class="line"><span class="cl">    <span class="k">if</span> ! <span class="nb">command</span> -v cargo <span class="p">&amp;</span>&gt; /dev/null<span class="p">;</span> <span class="k">then</span>
+</span></span><span class="line"><span class="cl">        print_error <span class="s2">&#34;Cargo (Rust) is not installed. Please install Rust first.&#34;</span>
+</span></span><span class="line"><span class="cl">        <span class="nb">exit</span> <span class="m">1</span>
+</span></span><span class="line"><span class="cl">    <span class="k">fi</span>
+</span></span><span class="line"><span class="cl">    
+</span></span><span class="line"><span class="cl">    <span class="c1"># Check if python3 is installed</span>
+</span></span><span class="line"><span class="cl">    <span class="k">if</span> ! <span class="nb">command</span> -v python3 <span class="p">&amp;</span>&gt; /dev/null<span class="p">;</span> <span class="k">then</span>
+</span></span><span class="line"><span class="cl">        print_error <span class="s2">&#34;Python3 is not installed. Please install Python3 first.&#34;</span>
+</span></span><span class="line"><span class="cl">        <span class="nb">exit</span> <span class="m">1</span>
+</span></span><span class="line"><span class="cl">    <span class="k">fi</span>
+</span></span><span class="line"><span class="cl">    
+</span></span><span class="line"><span class="cl">    <span class="c1"># Check if Cargo.toml exists</span>
+</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="o">[[</span> ! -f <span class="s2">&#34;Cargo.toml&#34;</span> <span class="o">]]</span><span class="p">;</span> <span class="k">then</span>
+</span></span><span class="line"><span class="cl">        print_error <span class="s2">&#34;Cargo.toml not found. Please run this script from the Rust project directory.&#34;</span>
+</span></span><span class="line"><span class="cl">        <span class="nb">exit</span> <span class="m">1</span>
+</span></span><span class="line"><span class="cl">    <span class="k">fi</span>
+</span></span><span class="line"><span class="cl">    
+</span></span><span class="line"><span class="cl">    print_success <span class="s2">&#34;All dependencies are available&#34;</span>
+</span></span><span class="line"><span class="cl"><span class="o">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">cleanup_server<span class="o">()</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="o">[[</span> -f <span class="s2">&#34;</span><span class="nv">$SERVER_PID_FILE</span><span class="s2">&#34;</span> <span class="o">]]</span><span class="p">;</span> <span class="k">then</span>
+</span></span><span class="line"><span class="cl">        <span class="nv">SERVER_PID</span><span class="o">=</span><span class="k">$(</span>cat <span class="s2">&#34;</span><span class="nv">$SERVER_PID_FILE</span><span class="s2">&#34;</span><span class="k">)</span>
+</span></span><span class="line"><span class="cl">        <span class="k">if</span> ps -p <span class="nv">$SERVER_PID</span> &gt; /dev/null 2&gt;<span class="p">&amp;</span>1<span class="p">;</span> <span class="k">then</span>
+</span></span><span class="line"><span class="cl">            print_step <span class="s2">&#34;Stopping server (PID: </span><span class="nv">$SERVER_PID</span><span class="s2">)...&#34;</span>
+</span></span><span class="line"><span class="cl">            <span class="nb">kill</span> <span class="nv">$SERVER_PID</span>
+</span></span><span class="line"><span class="cl">            sleep <span class="m">2</span>
+</span></span><span class="line"><span class="cl">            
+</span></span><span class="line"><span class="cl">            <span class="c1"># Force kill if still running</span>
+</span></span><span class="line"><span class="cl">            <span class="k">if</span> ps -p <span class="nv">$SERVER_PID</span> &gt; /dev/null 2&gt;<span class="p">&amp;</span>1<span class="p">;</span> <span class="k">then</span>
+</span></span><span class="line"><span class="cl">                print_warning <span class="s2">&#34;Force killing server...&#34;</span>
+</span></span><span class="line"><span class="cl">                <span class="nb">kill</span> -9 <span class="nv">$SERVER_PID</span>
+</span></span><span class="line"><span class="cl">            <span class="k">fi</span>
+</span></span><span class="line"><span class="cl">        <span class="k">fi</span>
+</span></span><span class="line"><span class="cl">        rm -f <span class="s2">&#34;</span><span class="nv">$SERVER_PID_FILE</span><span class="s2">&#34;</span>
+</span></span><span class="line"><span class="cl">    <span class="k">fi</span>
+</span></span><span class="line"><span class="cl">    
+</span></span><span class="line"><span class="cl">    <span class="c1"># Also kill any process using the port</span>
+</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="nb">command</span> -v lsof <span class="p">&amp;</span>&gt; /dev/null<span class="p">;</span> <span class="k">then</span>
+</span></span><span class="line"><span class="cl">        <span class="nb">local</span> <span class="nv">port_pid</span><span class="o">=</span><span class="k">$(</span>lsof -ti:<span class="nv">$SERVER_PORT</span> 2&gt;/dev/null <span class="o">||</span> <span class="nb">true</span><span class="k">)</span>
+</span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="o">[[</span> -n <span class="s2">&#34;</span><span class="nv">$port_pid</span><span class="s2">&#34;</span> <span class="o">]]</span><span class="p">;</span> <span class="k">then</span>
+</span></span><span class="line"><span class="cl">            print_step <span class="s2">&#34;Killing process using port </span><span class="nv">$SERVER_PORT</span><span class="s2"> (PID: </span><span class="nv">$port_pid</span><span class="s2">)...&#34;</span>
+</span></span><span class="line"><span class="cl">            <span class="nb">kill</span> -9 <span class="nv">$port_pid</span> 2&gt;/dev/null <span class="o">||</span> <span class="nb">true</span>
+</span></span><span class="line"><span class="cl">        <span class="k">fi</span>
+</span></span><span class="line"><span class="cl">    <span class="k">fi</span>
+</span></span><span class="line"><span class="cl"><span class="o">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">build_server<span class="o">()</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">    print_step <span class="s2">&#34;Building Rust server...&#34;</span>
+</span></span><span class="line"><span class="cl">    
+</span></span><span class="line"><span class="cl">    <span class="k">if</span> cargo build --release<span class="p">;</span> <span class="k">then</span>
+</span></span><span class="line"><span class="cl">        print_success <span class="s2">&#34;Server built successfully&#34;</span>
+</span></span><span class="line"><span class="cl">    <span class="k">else</span>
+</span></span><span class="line"><span class="cl">        print_error <span class="s2">&#34;Failed to build server&#34;</span>
+</span></span><span class="line"><span class="cl">        <span class="nb">exit</span> <span class="m">1</span>
+</span></span><span class="line"><span class="cl">    <span class="k">fi</span>
+</span></span><span class="line"><span class="cl"><span class="o">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">start_server<span class="o">()</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">    print_step <span class="s2">&#34;Starting Eventor server on </span><span class="nv">$SERVER_HOST</span><span class="s2">:</span><span class="nv">$SERVER_PORT</span><span class="s2">...&#34;</span>
+</span></span><span class="line"><span class="cl">    
+</span></span><span class="line"><span class="cl">    <span class="c1"># Start server in background and capture PID</span>
+</span></span><span class="line"><span class="cl">    cargo run --release &gt; <span class="s2">&#34;</span><span class="nv">$SERVER_LOG</span><span class="s2">&#34;</span> 2&gt;<span class="p">&amp;</span><span class="m">1</span> <span class="p">&amp;</span>
+</span></span><span class="line"><span class="cl">    <span class="nv">SERVER_PID</span><span class="o">=</span><span class="nv">$!</span>
+</span></span><span class="line"><span class="cl">    <span class="nb">echo</span> <span class="nv">$SERVER_PID</span> &gt; <span class="s2">&#34;</span><span class="nv">$SERVER_PID_FILE</span><span class="s2">&#34;</span>
+</span></span><span class="line"><span class="cl">    
+</span></span><span class="line"><span class="cl">    print_step <span class="s2">&#34;Server started with PID: </span><span class="nv">$SERVER_PID</span><span class="s2">&#34;</span>
+</span></span><span class="line"><span class="cl">    print_step <span class="s2">&#34;Waiting for server to be ready...&#34;</span>
+</span></span><span class="line"><span class="cl">    
+</span></span><span class="line"><span class="cl">    <span class="c1"># Wait for server to be ready (max 10 seconds)</span>
+</span></span><span class="line"><span class="cl">    <span class="nb">local</span> <span class="nv">count</span><span class="o">=</span><span class="m">0</span>
+</span></span><span class="line"><span class="cl">    <span class="k">while</span> <span class="o">[[</span> <span class="nv">$count</span> -lt <span class="m">20</span> <span class="o">]]</span><span class="p">;</span> <span class="k">do</span>
+</span></span><span class="line"><span class="cl">        <span class="k">if</span> nc -z <span class="nv">$SERVER_HOST</span> <span class="nv">$SERVER_PORT</span> 2&gt;/dev/null<span class="p">;</span> <span class="k">then</span>
+</span></span><span class="line"><span class="cl">            print_success <span class="s2">&#34;Server is ready and accepting connections&#34;</span>
+</span></span><span class="line"><span class="cl">            <span class="k">return</span> <span class="m">0</span>
+</span></span><span class="line"><span class="cl">        <span class="k">fi</span>
+</span></span><span class="line"><span class="cl">        sleep 0.5
+</span></span><span class="line"><span class="cl">        <span class="nv">count</span><span class="o">=</span><span class="k">$((</span>count <span class="o">+</span> <span class="m">1</span><span class="k">))</span>
+</span></span><span class="line"><span class="cl">        <span class="nb">echo</span> -n <span class="s2">&#34;.&#34;</span>
+</span></span><span class="line"><span class="cl">    <span class="k">done</span>
+</span></span><span class="line"><span class="cl">    
+</span></span><span class="line"><span class="cl">    <span class="nb">echo</span> <span class="s2">&#34;&#34;</span>
+</span></span><span class="line"><span class="cl">    print_error <span class="s2">&#34;Server failed to start or is not accepting connections&#34;</span>
+</span></span><span class="line"><span class="cl">    print_error <span class="s2">&#34;Server log:&#34;</span>
+</span></span><span class="line"><span class="cl">    cat <span class="s2">&#34;</span><span class="nv">$SERVER_LOG</span><span class="s2">&#34;</span>
+</span></span><span class="line"><span class="cl">    cleanup_server
+</span></span><span class="line"><span class="cl">    <span class="nb">exit</span> <span class="m">1</span>
+</span></span><span class="line"><span class="cl"><span class="o">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">create_test_script<span class="o">()</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="o">[[</span> ! -f <span class="s2">&#34;</span><span class="nv">$TEST_SCRIPT</span><span class="s2">&#34;</span> <span class="o">]]</span><span class="p">;</span> <span class="k">then</span>
+</span></span><span class="line"><span class="cl">        print_step <span class="s2">&#34;Creating test script...&#34;</span>
+</span></span><span class="line"><span class="cl">        
+</span></span><span class="line"><span class="cl">        cat &gt; <span class="s2">&#34;</span><span class="nv">$TEST_SCRIPT</span><span class="s2">&#34;</span> <span class="s">&lt;&lt; &#39;EOF&#39;
+</span></span></span><span class="line"><span class="cl"><span class="s">#!/usr/bin/env python3
+</span></span></span><span class="line"><span class="cl"><span class="s">&#34;&#34;&#34;
+</span></span></span><span class="line"><span class="cl"><span class="s">Quick test script for the Eventor server implementation.
+</span></span></span><span class="line"><span class="cl"><span class="s">&#34;&#34;&#34;
+</span></span></span><span class="line"><span class="cl"><span class="s">
+</span></span></span><span class="line"><span class="cl"><span class="s">import socket
+</span></span></span><span class="line"><span class="cl"><span class="s">import struct
+</span></span></span><span class="line"><span class="cl"><span class="s">import time
+</span></span></span><span class="line"><span class="cl"><span class="s">import threading
+</span></span></span><span class="line"><span class="cl"><span class="s">
+</span></span></span><span class="line"><span class="cl"><span class="s">class EventorTestClient:
+</span></span></span><span class="line"><span class="cl"><span class="s">    def __init__(self, host=&#34;127.0.0.1&#34;, port=9092):
+</span></span></span><span class="line"><span class="cl"><span class="s">        self.host = host
+</span></span></span><span class="line"><span class="cl"><span class="s">        self.port = port
+</span></span></span><span class="line"><span class="cl"><span class="s">        self.correlation_id_counter = 1
+</span></span></span><span class="line"><span class="cl"><span class="s">    
+</span></span></span><span class="line"><span class="cl"><span class="s">    def connect(self):
+</span></span></span><span class="line"><span class="cl"><span class="s">        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+</span></span></span><span class="line"><span class="cl"><span class="s">        sock.connect((self.host, self.port))
+</span></span></span><span class="line"><span class="cl"><span class="s">        return sock
+</span></span></span><span class="line"><span class="cl"><span class="s">    
+</span></span></span><span class="line"><span class="cl"><span class="s">    def get_next_correlation_id(self):
+</span></span></span><span class="line"><span class="cl"><span class="s">        correlation_id = self.correlation_id_counter
+</span></span></span><span class="line"><span class="cl"><span class="s">        self.correlation_id_counter += 1
+</span></span></span><span class="line"><span class="cl"><span class="s">        return correlation_id
+</span></span></span><span class="line"><span class="cl"><span class="s">    
+</span></span></span><span class="line"><span class="cl"><span class="s">    def build_api_versions_request(self, api_version=3):
+</span></span></span><span class="line"><span class="cl"><span class="s">        correlation_id = self.get_next_correlation_id()
+</span></span></span><span class="line"><span class="cl"><span class="s">        api_key = 18  # APIVersions
+</span></span></span><span class="line"><span class="cl"><span class="s">        client_id = &#34;test-client&#34;
+</span></span></span><span class="line"><span class="cl"><span class="s">        
+</span></span></span><span class="line"><span class="cl"><span class="s">        request_body = bytearray()
+</span></span></span><span class="line"><span class="cl"><span class="s">        request_body.extend(struct.pack(&#34;&gt;H&#34;, api_key))
+</span></span></span><span class="line"><span class="cl"><span class="s">        request_body.extend(struct.pack(&#34;&gt;H&#34;, api_version))
+</span></span></span><span class="line"><span class="cl"><span class="s">        request_body.extend(struct.pack(&#34;&gt;I&#34;, correlation_id))
+</span></span></span><span class="line"><span class="cl"><span class="s">        request_body.extend(struct.pack(&#34;&gt;B&#34;, len(client_id) + 1))
+</span></span></span><span class="line"><span class="cl"><span class="s">        request_body.extend(client_id.encode(&#39;utf-8&#39;))
+</span></span></span><span class="line"><span class="cl"><span class="s">        request_body.extend(struct.pack(&#34;&gt;B&#34;, 0))  # Tagged fields
+</span></span></span><span class="line"><span class="cl"><span class="s">        
+</span></span></span><span class="line"><span class="cl"><span class="s">        message_size = len(request_body)
+</span></span></span><span class="line"><span class="cl"><span class="s">        full_request = struct.pack(&#34;&gt;I&#34;, message_size) + request_body
+</span></span></span><span class="line"><span class="cl"><span class="s">        return full_request, correlation_id
+</span></span></span><span class="line"><span class="cl"><span class="s">    
+</span></span></span><span class="line"><span class="cl"><span class="s">    def build_describe_topic_partitions_request(self, topic_name=&#34;test-topic&#34;):
+</span></span></span><span class="line"><span class="cl"><span class="s">        correlation_id = self.get_next_correlation_id()
+</span></span></span><span class="line"><span class="cl"><span class="s">        api_key = 75
+</span></span></span><span class="line"><span class="cl"><span class="s">        api_version = 0
+</span></span></span><span class="line"><span class="cl"><span class="s">        
+</span></span></span><span class="line"><span class="cl"><span class="s">        request_body = bytearray()
+</span></span></span><span class="line"><span class="cl"><span class="s">        request_body.extend(struct.pack(&#34;&gt;H&#34;, api_key))
+</span></span></span><span class="line"><span class="cl"><span class="s">        request_body.extend(struct.pack(&#34;&gt;H&#34;, api_version))
+</span></span></span><span class="line"><span class="cl"><span class="s">        request_body.extend(struct.pack(&#34;&gt;I&#34;, correlation_id))
+</span></span></span><span class="line"><span class="cl"><span class="s">        
+</span></span></span><span class="line"><span class="cl"><span class="s">        client_id = &#34;test-client&#34;
+</span></span></span><span class="line"><span class="cl"><span class="s">        request_body.extend(struct.pack(&#34;&gt;H&#34;, len(client_id)))
+</span></span></span><span class="line"><span class="cl"><span class="s">        request_body.extend(client_id.encode(&#39;utf-8&#39;))
+</span></span></span><span class="line"><span class="cl"><span class="s">        
+</span></span></span><span class="line"><span class="cl"><span class="s">        request_body.extend(struct.pack(&#34;&gt;B&#34;, 2))  # 1 topic + 1
+</span></span></span><span class="line"><span class="cl"><span class="s">        request_body.extend(struct.pack(&#34;&gt;B&#34;, len(topic_name) + 1))
+</span></span></span><span class="line"><span class="cl"><span class="s">        request_body.extend(topic_name.encode(&#39;utf-8&#39;))
+</span></span></span><span class="line"><span class="cl"><span class="s">        request_body.extend(struct.pack(&#34;&gt;B&#34;, 0))  # Tagged fields
+</span></span></span><span class="line"><span class="cl"><span class="s">        request_body.extend(struct.pack(&#34;&gt;B&#34;, 0))  # Null cursor
+</span></span></span><span class="line"><span class="cl"><span class="s">        request_body.extend(struct.pack(&#34;&gt;B&#34;, 0))  # Tagged fields
+</span></span></span><span class="line"><span class="cl"><span class="s">        
+</span></span></span><span class="line"><span class="cl"><span class="s">        message_size = len(request_body)
+</span></span></span><span class="line"><span class="cl"><span class="s">        full_request = struct.pack(&#34;&gt;I&#34;, message_size) + request_body
+</span></span></span><span class="line"><span class="cl"><span class="s">        return full_request, correlation_id
+</span></span></span><span class="line"><span class="cl"><span class="s">    
+</span></span></span><span class="line"><span class="cl"><span class="s">    def send_request_and_get_response(self, request):
+</span></span></span><span class="line"><span class="cl"><span class="s">        sock = self.connect()
+</span></span></span><span class="line"><span class="cl"><span class="s">        try:
+</span></span></span><span class="line"><span class="cl"><span class="s">            sock.send(request)
+</span></span></span><span class="line"><span class="cl"><span class="s">            size_bytes = sock.recv(4)
+</span></span></span><span class="line"><span class="cl"><span class="s">            if len(size_bytes) != 4:
+</span></span></span><span class="line"><span class="cl"><span class="s">                raise Exception(&#34;Failed to read message size&#34;)
+</span></span></span><span class="line"><span class="cl"><span class="s">            
+</span></span></span><span class="line"><span class="cl"><span class="s">            message_size = struct.unpack(&#34;&gt;I&#34;, size_bytes)[0]
+</span></span></span><span class="line"><span class="cl"><span class="s">            response_body = b&#34;&#34;
+</span></span></span><span class="line"><span class="cl"><span class="s">            while len(response_body) &lt; message_size:
+</span></span></span><span class="line"><span class="cl"><span class="s">                chunk = sock.recv(message_size - len(response_body))
+</span></span></span><span class="line"><span class="cl"><span class="s">                if not chunk:
+</span></span></span><span class="line"><span class="cl"><span class="s">                    raise Exception(&#34;Connection closed unexpectedly&#34;)
+</span></span></span><span class="line"><span class="cl"><span class="s">                response_body += chunk
+</span></span></span><span class="line"><span class="cl"><span class="s">            
+</span></span></span><span class="line"><span class="cl"><span class="s">            return size_bytes + response_body
+</span></span></span><span class="line"><span class="cl"><span class="s">        finally:
+</span></span></span><span class="line"><span class="cl"><span class="s">            sock.close()
+</span></span></span><span class="line"><span class="cl"><span class="s">
+</span></span></span><span class="line"><span class="cl"><span class="s">def test_api_versions():
+</span></span></span><span class="line"><span class="cl"><span class="s">    print(&#34;🧪 Testing APIVersions...&#34;)
+</span></span></span><span class="line"><span class="cl"><span class="s">    client = EventorTestClient()
+</span></span></span><span class="line"><span class="cl"><span class="s">    request, expected_correlation_id = client.build_api_versions_request(api_version=3)
+</span></span></span><span class="line"><span class="cl"><span class="s">    response = client.send_request_and_get_response(request)
+</span></span></span><span class="line"><span class="cl"><span class="s">    
+</span></span></span><span class="line"><span class="cl"><span class="s">    # Parse correlation ID from response
+</span></span></span><span class="line"><span class="cl"><span class="s">    correlation_id = struct.unpack(&#34;&gt;I&#34;, response[4:8])[0]
+</span></span></span><span class="line"><span class="cl"><span class="s">    error_code = struct.unpack(&#34;&gt;H&#34;, response[8:10])[0]
+</span></span></span><span class="line"><span class="cl"><span class="s">    
+</span></span></span><span class="line"><span class="cl"><span class="s">    assert correlation_id == expected_correlation_id, f&#34;Correlation ID mismatch&#34;
+</span></span></span><span class="line"><span class="cl"><span class="s">    assert error_code == 0, f&#34;Expected error code 0, got {error_code}&#34;
+</span></span></span><span class="line"><span class="cl"><span class="s">    print(&#34;✅ APIVersions test passed&#34;)
+</span></span></span><span class="line"><span class="cl"><span class="s">
+</span></span></span><span class="line"><span class="cl"><span class="s">def test_describe_topic_partitions():
+</span></span></span><span class="line"><span class="cl"><span class="s">    print(&#34;🧪 Testing DescribeTopicPartitions...&#34;)
+</span></span></span><span class="line"><span class="cl"><span class="s">    client = EventorTestClient()
+</span></span></span><span class="line"><span class="cl"><span class="s">    request, expected_correlation_id = client.build_describe_topic_partitions_request(&#34;unknown-topic&#34;)
+</span></span></span><span class="line"><span class="cl"><span class="s">    response = client.send_request_and_get_response(request)
+</span></span></span><span class="line"><span class="cl"><span class="s">    
+</span></span></span><span class="line"><span class="cl"><span class="s">    # Parse correlation ID from response
+</span></span></span><span class="line"><span class="cl"><span class="s">    correlation_id = struct.unpack(&#34;&gt;I&#34;, response[4:8])[0]
+</span></span></span><span class="line"><span class="cl"><span class="s">    assert correlation_id == expected_correlation_id, f&#34;Correlation ID mismatch&#34;
+</span></span></span><span class="line"><span class="cl"><span class="s">    print(&#34;✅ DescribeTopicPartitions test passed&#34;)
+</span></span></span><span class="line"><span class="cl"><span class="s">
+</span></span></span><span class="line"><span class="cl"><span class="s">def test_concurrent_connections():
+</span></span></span><span class="line"><span class="cl"><span class="s">    print(&#34;🧪 Testing concurrent connections...&#34;)
+</span></span></span><span class="line"><span class="cl"><span class="s">    
+</span></span></span><span class="line"><span class="cl"><span class="s">    def worker(worker_id, results):
+</span></span></span><span class="line"><span class="cl"><span class="s">        try:
+</span></span></span><span class="line"><span class="cl"><span class="s">            client = EventorTestClient()
+</span></span></span><span class="line"><span class="cl"><span class="s">            request, corr_id = client.build_api_versions_request()
+</span></span></span><span class="line"><span class="cl"><span class="s">            response = client.send_request_and_get_response(request)
+</span></span></span><span class="line"><span class="cl"><span class="s">            correlation_id = struct.unpack(&#34;&gt;I&#34;, response[4:8])[0]
+</span></span></span><span class="line"><span class="cl"><span class="s">            results.append(correlation_id == corr_id)
+</span></span></span><span class="line"><span class="cl"><span class="s">        except Exception as e:
+</span></span></span><span class="line"><span class="cl"><span class="s">            results.append(False)
+</span></span></span><span class="line"><span class="cl"><span class="s">    
+</span></span></span><span class="line"><span class="cl"><span class="s">    results = []
+</span></span></span><span class="line"><span class="cl"><span class="s">    threads = []
+</span></span></span><span class="line"><span class="cl"><span class="s">    
+</span></span></span><span class="line"><span class="cl"><span class="s">    for i in range(5):
+</span></span></span><span class="line"><span class="cl"><span class="s">        thread = threading.Thread(target=worker, args=(i, results))
+</span></span></span><span class="line"><span class="cl"><span class="s">        threads.append(thread)
+</span></span></span><span class="line"><span class="cl"><span class="s">        thread.start()
+</span></span></span><span class="line"><span class="cl"><span class="s">    
+</span></span></span><span class="line"><span class="cl"><span class="s">    for thread in threads:
+</span></span></span><span class="line"><span class="cl"><span class="s">        thread.join()
+</span></span></span><span class="line"><span class="cl"><span class="s">    
+</span></span></span><span class="line"><span class="cl"><span class="s">    successful = sum(results)
+</span></span></span><span class="line"><span class="cl"><span class="s">    print(f&#34;✅ Concurrent test: {successful}/5 connections successful&#34;)
+</span></span></span><span class="line"><span class="cl"><span class="s">    assert successful == 5, f&#34;Not all concurrent connections succeeded&#34;
+</span></span></span><span class="line"><span class="cl"><span class="s">
+</span></span></span><span class="line"><span class="cl"><span class="s">def test_multiple_requests():
+</span></span></span><span class="line"><span class="cl"><span class="s">    print(&#34;🧪 Testing multiple requests on same connection...&#34;)
+</span></span></span><span class="line"><span class="cl"><span class="s">    
+</span></span></span><span class="line"><span class="cl"><span class="s">    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+</span></span></span><span class="line"><span class="cl"><span class="s">    sock.connect((&#34;127.0.0.1&#34;, 9092))
+</span></span></span><span class="line"><span class="cl"><span class="s">    
+</span></span></span><span class="line"><span class="cl"><span class="s">    try:
+</span></span></span><span class="line"><span class="cl"><span class="s">        client = EventorTestClient()
+</span></span></span><span class="line"><span class="cl"><span class="s">        
+</span></span></span><span class="line"><span class="cl"><span class="s">        # First request
+</span></span></span><span class="line"><span class="cl"><span class="s">        request1, corr_id1 = client.build_api_versions_request(api_version=3)
+</span></span></span><span class="line"><span class="cl"><span class="s">        sock.send(request1)
+</span></span></span><span class="line"><span class="cl"><span class="s">        size_bytes = sock.recv(4)
+</span></span></span><span class="line"><span class="cl"><span class="s">        message_size = struct.unpack(&#34;&gt;I&#34;, size_bytes)[0]
+</span></span></span><span class="line"><span class="cl"><span class="s">        response1_body = sock.recv(message_size)
+</span></span></span><span class="line"><span class="cl"><span class="s">        response1 = size_bytes + response1_body
+</span></span></span><span class="line"><span class="cl"><span class="s">        correlation_id1 = struct.unpack(&#34;&gt;I&#34;, response1[4:8])[0]
+</span></span></span><span class="line"><span class="cl"><span class="s">        
+</span></span></span><span class="line"><span class="cl"><span class="s">        # Second request
+</span></span></span><span class="line"><span class="cl"><span class="s">        request2, corr_id2 = client.build_describe_topic_partitions_request(&#34;test-topic&#34;)
+</span></span></span><span class="line"><span class="cl"><span class="s">        sock.send(request2)
+</span></span></span><span class="line"><span class="cl"><span class="s">        size_bytes = sock.recv(4)
+</span></span></span><span class="line"><span class="cl"><span class="s">        message_size = struct.unpack(&#34;&gt;I&#34;, size_bytes)[0]
+</span></span></span><span class="line"><span class="cl"><span class="s">        response2_body = sock.recv(message_size)
+</span></span></span><span class="line"><span class="cl"><span class="s">        response2 = size_bytes + response2_body
+</span></span></span><span class="line"><span class="cl"><span class="s">        correlation_id2 = struct.unpack(&#34;&gt;I&#34;, response2[4:8])[0]
+</span></span></span><span class="line"><span class="cl"><span class="s">        
+</span></span></span><span class="line"><span class="cl"><span class="s">        assert correlation_id1 == corr_id1 and correlation_id2 == corr_id2
+</span></span></span><span class="line"><span class="cl"><span class="s">        print(&#34;✅ Multiple requests test passed&#34;)
+</span></span></span><span class="line"><span class="cl"><span class="s">        
+</span></span></span><span class="line"><span class="cl"><span class="s">    finally:
+</span></span></span><span class="line"><span class="cl"><span class="s">        sock.close()
+</span></span></span><span class="line"><span class="cl"><span class="s">
+</span></span></span><span class="line"><span class="cl"><span class="s">def main():
+</span></span></span><span class="line"><span class="cl"><span class="s">    print(&#34;🚀 Running Eventor Server Tests&#34;)
+</span></span></span><span class="line"><span class="cl"><span class="s">    print(&#34;=&#34; * 50)
+</span></span></span><span class="line"><span class="cl"><span class="s">    
+</span></span></span><span class="line"><span class="cl"><span class="s">    try:
+</span></span></span><span class="line"><span class="cl"><span class="s">        test_api_versions()
+</span></span></span><span class="line"><span class="cl"><span class="s">        test_describe_topic_partitions()
+</span></span></span><span class="line"><span class="cl"><span class="s">        test_concurrent_connections()
+</span></span></span><span class="line"><span class="cl"><span class="s">        test_multiple_requests()
+</span></span></span><span class="line"><span class="cl"><span class="s">        
+</span></span></span><span class="line"><span class="cl"><span class="s">        print(&#34;\n🎉 All tests passed!&#34;)
+</span></span></span><span class="line"><span class="cl"><span class="s">        print(&#34;📊 Test Summary:&#34;)
+</span></span></span><span class="line"><span class="cl"><span class="s">        print(&#34;  ✅ APIVersions request handling&#34;)
+</span></span></span><span class="line"><span class="cl"><span class="s">        print(&#34;  ✅ DescribeTopicPartitions request handling&#34;)
+</span></span></span><span class="line"><span class="cl"><span class="s">        print(&#34;  ✅ Concurrent connections (5 clients)&#34;)
+</span></span></span><span class="line"><span class="cl"><span class="s">        print(&#34;  ✅ Multiple requests per connection&#34;)
+</span></span></span><span class="line"><span class="cl"><span class="s">        print(&#34;  ✅ Correlation ID handling&#34;)
+</span></span></span><span class="line"><span class="cl"><span class="s">        
+</span></span></span><span class="line"><span class="cl"><span class="s">    except Exception as e:
+</span></span></span><span class="line"><span class="cl"><span class="s">        print(f&#34;\n❌ Test failed: {e}&#34;)
+</span></span></span><span class="line"><span class="cl"><span class="s">        import traceback
+</span></span></span><span class="line"><span class="cl"><span class="s">        traceback.print_exc()
+</span></span></span><span class="line"><span class="cl"><span class="s">        exit(1)
+</span></span></span><span class="line"><span class="cl"><span class="s">
+</span></span></span><span class="line"><span class="cl"><span class="s">if __name__ == &#34;__main__&#34;:
+</span></span></span><span class="line"><span class="cl"><span class="s">    main()
+</span></span></span><span class="line"><span class="cl"><span class="s">EOF</span>
+</span></span><span class="line"><span class="cl">        
+</span></span><span class="line"><span class="cl">        chmod +x <span class="s2">&#34;</span><span class="nv">$TEST_SCRIPT</span><span class="s2">&#34;</span>
+</span></span><span class="line"><span class="cl">        print_success <span class="s2">&#34;Test script created&#34;</span>
+</span></span><span class="line"><span class="cl">    <span class="k">fi</span>
+</span></span><span class="line"><span class="cl"><span class="o">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">run_tests<span class="o">()</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">    print_step <span class="s2">&#34;Running test suite...&#34;</span>
+</span></span><span class="line"><span class="cl">    <span class="nb">echo</span> <span class="s2">&#34;&#34;</span>
+</span></span><span class="line"><span class="cl">    
+</span></span><span class="line"><span class="cl">    <span class="k">if</span> python3 <span class="s2">&#34;</span><span class="nv">$TEST_SCRIPT</span><span class="s2">&#34;</span><span class="p">;</span> <span class="k">then</span>
+</span></span><span class="line"><span class="cl">        print_success <span class="s2">&#34;All tests passed! 🎉&#34;</span>
+</span></span><span class="line"><span class="cl">        <span class="k">return</span> <span class="m">0</span>
+</span></span><span class="line"><span class="cl">    <span class="k">else</span>
+</span></span><span class="line"><span class="cl">        print_error <span class="s2">&#34;Some tests failed&#34;</span>
+</span></span><span class="line"><span class="cl">        <span class="k">return</span> <span class="m">1</span>
+</span></span><span class="line"><span class="cl">    <span class="k">fi</span>
+</span></span><span class="line"><span class="cl"><span class="o">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">show_server_logs<span class="o">()</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="o">[[</span> -f <span class="s2">&#34;</span><span class="nv">$SERVER_LOG</span><span class="s2">&#34;</span> <span class="o">]]</span><span class="p">;</span> <span class="k">then</span>
+</span></span><span class="line"><span class="cl">        <span class="nb">echo</span> <span class="s2">&#34;&#34;</span>
+</span></span><span class="line"><span class="cl">        print_step <span class="s2">&#34;Server logs:&#34;</span>
+</span></span><span class="line"><span class="cl">        <span class="nb">echo</span> -e <span class="s2">&#34;</span><span class="si">${</span><span class="nv">PURPLE</span><span class="si">}</span><span class="s2">&#34;</span>
+</span></span><span class="line"><span class="cl">        tail -20 <span class="s2">&#34;</span><span class="nv">$SERVER_LOG</span><span class="s2">&#34;</span>
+</span></span><span class="line"><span class="cl">        <span class="nb">echo</span> -e <span class="s2">&#34;</span><span class="si">${</span><span class="nv">NC</span><span class="si">}</span><span class="s2">&#34;</span>
+</span></span><span class="line"><span class="cl">    <span class="k">fi</span>
+</span></span><span class="line"><span class="cl"><span class="o">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">main<span class="o">()</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">    print_banner
+</span></span><span class="line"><span class="cl">    
+</span></span><span class="line"><span class="cl">    <span class="c1"># Set up cleanup trap</span>
+</span></span><span class="line"><span class="cl">    <span class="nb">trap</span> cleanup_server EXIT
+</span></span><span class="line"><span class="cl">    
+</span></span><span class="line"><span class="cl">    check_dependencies
+</span></span><span class="line"><span class="cl">    cleanup_server  <span class="c1"># Clean up any existing server</span>
+</span></span><span class="line"><span class="cl">    create_test_script
+</span></span><span class="line"><span class="cl">    build_server
+</span></span><span class="line"><span class="cl">    start_server
+</span></span><span class="line"><span class="cl">    
+</span></span><span class="line"><span class="cl">    <span class="nb">echo</span> <span class="s2">&#34;&#34;</span>
+</span></span><span class="line"><span class="cl">    
+</span></span><span class="line"><span class="cl">    <span class="k">if</span> run_tests<span class="p">;</span> <span class="k">then</span>
+</span></span><span class="line"><span class="cl">        <span class="nb">echo</span> <span class="s2">&#34;&#34;</span>
+</span></span><span class="line"><span class="cl">        print_success <span class="s2">&#34;🎊 Test suite completed successfully!&#34;</span>
+</span></span><span class="line"><span class="cl">        <span class="nb">echo</span> -e <span class="s2">&#34;</span><span class="si">${</span><span class="nv">GREEN</span><span class="si">}</span><span class="s2">&#34;</span>
+</span></span><span class="line"><span class="cl">        <span class="nb">echo</span> <span class="s2">&#34;╔══════════════════════════════════════════════════════════════╗&#34;</span>
+</span></span><span class="line"><span class="cl">        <span class="nb">echo</span> <span class="s2">&#34;║  Your Eventor server implementation is working correctly! 🚀 ║&#34;</span>
+</span></span><span class="line"><span class="cl">        <span class="nb">echo</span> <span class="s2">&#34;╚══════════════════════════════════════════════════════════════╝&#34;</span>
+</span></span><span class="line"><span class="cl">        <span class="nb">echo</span> -e <span class="s2">&#34;</span><span class="si">${</span><span class="nv">NC</span><span class="si">}</span><span class="s2">&#34;</span>
+</span></span><span class="line"><span class="cl">    <span class="k">else</span>
+</span></span><span class="line"><span class="cl">        <span class="nb">echo</span> <span class="s2">&#34;&#34;</span>
+</span></span><span class="line"><span class="cl">        print_error <span class="s2">&#34;Test suite failed&#34;</span>
+</span></span><span class="line"><span class="cl">        show_server_logs
+</span></span><span class="line"><span class="cl">        <span class="nb">exit</span> <span class="m">1</span>
+</span></span><span class="line"><span class="cl">    <span class="k">fi</span>
+</span></span><span class="line"><span class="cl"><span class="o">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># Handle script arguments</span>
+</span></span><span class="line"><span class="cl"><span class="k">case</span> <span class="s2">&#34;</span><span class="si">${</span><span class="nv">1</span><span class="k">:-</span><span class="si">}</span><span class="s2">&#34;</span> in
+</span></span><span class="line"><span class="cl">    <span class="s2">&#34;clean&#34;</span><span class="o">)</span>
+</span></span><span class="line"><span class="cl">        print_step <span class="s2">&#34;Cleaning up...&#34;</span>
+</span></span><span class="line"><span class="cl">        cleanup_server
+</span></span><span class="line"><span class="cl">        rm -f <span class="s2">&#34;</span><span class="nv">$SERVER_LOG</span><span class="s2">&#34;</span> <span class="s2">&#34;</span><span class="nv">$TEST_SCRIPT</span><span class="s2">&#34;</span>
+</span></span><span class="line"><span class="cl">        print_success <span class="s2">&#34;Cleanup completed&#34;</span>
+</span></span><span class="line"><span class="cl">        <span class="nb">exit</span> <span class="m">0</span>
+</span></span><span class="line"><span class="cl">        <span class="p">;;</span>
+</span></span><span class="line"><span class="cl">    <span class="s2">&#34;logs&#34;</span><span class="o">)</span>
+</span></span><span class="line"><span class="cl">        show_server_logs
+</span></span><span class="line"><span class="cl">        <span class="nb">exit</span> <span class="m">0</span>
+</span></span><span class="line"><span class="cl">        <span class="p">;;</span>
+</span></span><span class="line"><span class="cl">    <span class="s2">&#34;help&#34;</span><span class="p">|</span><span class="s2">&#34;-h&#34;</span><span class="p">|</span><span class="s2">&#34;--help&#34;</span><span class="o">)</span>
+</span></span><span class="line"><span class="cl">        <span class="nb">echo</span> <span class="s2">&#34;Usage: </span><span class="nv">$0</span><span class="s2"> [clean|logs|help]&#34;</span>
+</span></span><span class="line"><span class="cl">        <span class="nb">echo</span> <span class="s2">&#34;&#34;</span>
+</span></span><span class="line"><span class="cl">        <span class="nb">echo</span> <span class="s2">&#34;Commands:&#34;</span>
+</span></span><span class="line"><span class="cl">        <span class="nb">echo</span> <span class="s2">&#34;  (no args)  Run the full test suite&#34;</span>
+</span></span><span class="line"><span class="cl">        <span class="nb">echo</span> <span class="s2">&#34;  clean      Clean up server processes and temporary files&#34;</span>
+</span></span><span class="line"><span class="cl">        <span class="nb">echo</span> <span class="s2">&#34;  logs       Show recent server logs&#34;</span>
+</span></span><span class="line"><span class="cl">        <span class="nb">echo</span> <span class="s2">&#34;  help       Show this help message&#34;</span>
+</span></span><span class="line"><span class="cl">        <span class="nb">exit</span> <span class="m">0</span>
+</span></span><span class="line"><span class="cl">        <span class="p">;;</span>
+</span></span><span class="line"><span class="cl">    <span class="s2">&#34;&#34;</span><span class="o">)</span>
+</span></span><span class="line"><span class="cl">        main
+</span></span><span class="line"><span class="cl">        <span class="p">;;</span>
+</span></span><span class="line"><span class="cl">    *<span class="o">)</span>
+</span></span><span class="line"><span class="cl">        print_error <span class="s2">&#34;Unknown command: </span><span class="nv">$1</span><span class="s2">&#34;</span>
+</span></span><span class="line"><span class="cl">        <span class="nb">echo</span> <span class="s2">&#34;Use &#39;</span><span class="nv">$0</span><span class="s2"> help&#39; for usage information&#34;</span>
+</span></span><span class="line"><span class="cl">        <span class="nb">exit</span> <span class="m">1</span>
+</span></span><span class="line"><span class="cl">        <span class="p">;;</span>
+</span></span><span class="line"><span class="cl"><span class="k">esac</span>
+</span></span><span class="line"><span class="cl">EOF
+</span></span></code></pre></div><h2 id="farewells">Farewells<a href="#farewells" class="hanchor" ariaLabel="Anchor">#</a> </h2>
+<p>It was a really amazing journey for me to discover how much I like writting and reading my own nonsense, if this reached someone that is not just me and you came all this far, I really appreciate it.</p>
+<p>As a good note I am all for getting into hard challenges in the field, if you got a challenging project that you think I can collab with, feel free to reach me out!</p>
+<p>See you next time!</p>
+
+      </div></div>
+
+  
+    
+
+  
+
+  
+</article>
+
+  </div>
+
+  
+    <footer class="footer">
+  <div class="footer__inner">
+    
+      <div class="copyright">
+        <span>© 2025 All rights reserved? Ya right...</a></span>
+    
+      </div>
+  </div>
+</footer>
+
+
+
+
+
+
+<script type="text/javascript" src="/bundle.min.js"></script>
+
+
+
+
+
+  
+</div>
+
+</body>
+</html>

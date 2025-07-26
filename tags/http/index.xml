@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>HTTP on Terminal</title>
+    <link>/tags/http/</link>
+    <description>Recent content in HTTP on Terminal</description>
+    <generator>Hugo</generator>
+    <language>en</language>
+    <lastBuildDate>Wed, 27 Nov 2024 02:49:49 -0400</lastBuildDate>
+    <atom:link href="/tags/http/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Building an Event Stream Processor in Rust</title>
+      <link>/posts/building_a_event_stream_processor_with_rust/</link>
+      <pubDate>Wed, 27 Nov 2024 02:49:49 -0400</pubDate>
+      <guid>/posts/building_a_event_stream_processor_with_rust/</guid>
+      <description>&lt;h2 id=&#34;introduction-really&#34;&gt;Introduction..? Really..?&lt;/h2&gt;&#xA;&lt;p&gt;&amp;ldquo;Building an Event Stream Processor in Rust.&amp;rdquo; Yeah, I can already hear the collective yawn. You&amp;rsquo;re probably thinking, &amp;ldquo;Why reinvent the wheel? There are so many fantastic, &amp;lsquo;one-liner&amp;rsquo; frameworks that handle this stuff effortlessly.&amp;rdquo; And in Rust&amp;hellip;&lt;/p&gt;&#xA;&lt;p&gt;xD&lt;/p&gt;&#xA;&lt;p&gt;Honestly&amp;hellip; But on a particularly lonely night, after years of pushing pixels and solving problems with whatever tools were handed to me, I thought&amp;hellip; &amp;ldquo;Why not just be a normal person and write a blog post?&amp;rdquo; Guess what, here I am.&lt;/p&gt;</description>
+    </item>
+  </channel>
+</rss>
